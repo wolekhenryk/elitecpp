@@ -61,7 +61,12 @@ class Matrix {
    */
 
   Matrix operator + (Matrix newMatrix) {
-    Matrix res(this->a + newMatrix.a, this->b + newMatrix.b, this->c + newMatrix.c, this->d + newMatrix.d);
+    Matrix res(
+    this->a + newMatrix.a,
+    this->b + newMatrix.b,
+    this->c + newMatrix.c,
+    this->d + newMatrix.d
+    );
     return res;
   }
 
@@ -83,18 +88,66 @@ class Matrix {
   }
 };
 
-/**
- * @brief 
- * 
- * @param out 
- * @param m2 
- * @return ostream& 
- */
-ostream& operator << (ostream& out, Matrix m2) {
-  return out << "[" << m2.a << " " << m2.b << "]\n[" << m2.c << " " << m2.d << "]" << endl;
-}
+class Coords {
+  public:
+    int x;
+    int y;
 
+    Coords() {
+      this->x = 0;
+      this->y = 0;
+    }
+
+    Coords(int x_cor, int y_cor) {
+      this->x = x_cor;
+      this->y = y_cor;
+    }
+};
+
+class DynArray {
+  public:
+    int rows;
+    int cols;
+    int *elements;
+
+    DynArray() {
+      this->elements = NULL;
+      this->rows = 0;
+      this->cols = 0;
+    }
+
+    DynArray(int rc, int cc) {
+      this->elements = (int*) malloc(rc * cc * sizeof(int));
+      //Check if memory has been allocated
+      if (this->elements == NULL) {
+        cout << "Not enough RAM" << endl;
+      }
+      this->rows = rc;
+      this->cols = cc;
+    }
+
+    /**
+     * @brief This function returns MEMORY ADDRESS.
+     *        It allows to modify the data inside.
+     * 
+     * @param pos
+     *         
+     * @return &element
+     */
+    int * operator [] (Coords pos) {
+      return &elements[pos.x * cols + pos.y];
+    }
+};
+
+/**
+ * @brief Example driver code to demonstrate 
+ *        accessing and modification data inside
+ *         of my array
+ */
 int main() {
-  Matrix m1(1, 5, 8, 6), m2(8, 9, 4, 6);
-  cout << m1 * m2;
+  DynArray stones(19, 19);
+  Coords player(10, 11);
+  int tempValue = 12345;
+  *stones[player] = tempValue;
+  cout << *stones[player];
 }
