@@ -1,91 +1,28 @@
 #include <iostream>
+#include <stdlib.h>
 
 using namespace std;
 
-class Matrix {
+class Player {
   public:
-    int a, b, c, d;
-  
-  /**
-   * @brief We can create an empty matrix, or assign it values
-   * 
-   * @param param_11 
-   * @param param_12 
-   * @param param_21 
-   * @param param_22 
-   */
-  Matrix(int param_11, int param_12, int param_21, int param_22) {
-    this->a = param_11;
-    this->b = param_12;
-    this->c = param_21;
-    this->d = param_22;
-  }
+    int score;
 
-  /**
-   * @brief Empty matrix - default constructor
-   * 
-   */
-  Matrix() {
-    this->a = 0;
-    this->b = 0;
-    this->c = 0;
-    this->d = 0;
-  }
+    /**
+     * @brief Construct a new Player object
+     * 
+     */
+    Player() {
+      this->score = 0;
+    }
 
-  /**
-   * @brief Calculate determinant of a given matrix
-   * 
-   * @return int 
-   */
-  int calcDet() {
-    return (this->a * this->d) - (this->b * this->c);
-  }
-
-  /**
-   * @brief Multiply matrix by a constant number
-   * 
-   * @param n 
-   */
-  void constMult(int n) {
-    this->a *= n;
-    this->b *= n;
-    this->c *= n;
-    this->d *= n;
-  }
-
-  /**
-   * @brief Adding two matrices
-   * 
-   * @param newMatrix 
-   * @return Matrix 
-   */
-
-  Matrix operator + (Matrix newMatrix) {
-    Matrix res(
-    this->a + newMatrix.a,
-    this->b + newMatrix.b,
-    this->c + newMatrix.c,
-    this->d + newMatrix.d
-    );
-    return res;
-  }
-
-  /**
-   * @brief Multiply two matrices 2x2
-   * 
-   * @param newMatrix 
-   * @return Matrix 
-   */
-  Matrix operator * (Matrix newMatrix) {
-    int c_11 = (this->a * newMatrix.a) + (this->b * newMatrix.c);
-    int c_12 = (this->a * newMatrix.b) + (this->b * newMatrix.d);
-    int c_21 = (this->c * newMatrix.a) + (this->d * newMatrix.c);
-    int c_22 = (this->c * newMatrix.b) + (this->d * newMatrix.d);
-
-    //Create new matrix
-    Matrix res(c_11, c_12, c_21, c_22);
-    return res;
-  }
+    /**
+     * @brief Update player score with a new one
+     * 
+     * @param newScore 
+     */
+    void changeScore(int newScore) {
+      this->score = newScore;
+    }
 };
 
 class Coords {
@@ -93,11 +30,19 @@ class Coords {
     int x;
     int y;
 
+    /**
+     * @brief Construct a new Coords object
+     */
     Coords() {
       this->x = 0;
       this->y = 0;
     }
-
+    /**
+     * @brief Construct a new Coords object with parameters
+     * 
+     * @param x_cor 
+     * @param y_cor 
+     */
     Coords(int x_cor, int y_cor) {
       this->x = x_cor;
       this->y = y_cor;
@@ -110,12 +55,21 @@ class DynArray {
     int cols;
     int *elements;
 
+    /**
+     * @brief Construct a new Dyn Array object
+     */
     DynArray() {
       this->elements = NULL;
       this->rows = 0;
       this->cols = 0;
     }
 
+    /**
+     * @brief Construct a new Dyn Array object with parameters, set initially all values to 0
+     * 
+     * @param rc row count
+     * @param cc column count
+     */
     DynArray(int rc, int cc) {
       this->elements = (int*) malloc(rc * cc * sizeof(int));
       //Check if memory has been allocated
@@ -124,30 +78,82 @@ class DynArray {
       }
       this->rows = rc;
       this->cols = cc;
+
+      //Set all elements to 0 when an object is created
+      for (int i = 0; i < this->rows * this->cols; i++) {
+        elements[i] = 0;
+      }
     }
 
     /**
-     * @brief This function returns MEMORY ADDRESS.
-     *        It allows to modify the data inside.
+     * @brief This function allows to modify the data inside the 2D array.
      * 
-     * @param pos
-     *         
-     * @return &element
+     * @param pos A Coords class object, has x_cor and y_cor
+     * @return int* (it's very important)
      */
     int * operator [] (Coords pos) {
       return &elements[pos.x * cols + pos.y];
     }
+
+    /**
+     * @brief Destroy the Dyn Array object and free memory block
+     */
+    ~DynArray() {
+      free(this);
+    }
 };
 
 /**
- * @brief Example driver code to demonstrate 
- *        accessing and modification data inside
- *         of my array
+ * @brief Overloading the << operator allows to display current cursor coordinater easily
+ * 
+ * @param out 
+ * @param pos 
+ * @return ostream& 
+ */
+ostream& operator << (ostream& out, Coords pos) {
+  out << "[x_cor, y_cor] => [" << pos.x << ", " << pos.y << "]";
+  return out;
+}
+
+/**
+ * @brief Function to print a square board
+ * 
+ * @param board 
+ */
+void printBoard(DynArray board) {
+  for (int i = 0; i < board.rows; i++) {
+    for (int j = 0; j < board.cols; j++) {
+      cout << *board[{j, i}] << " ";
+    }
+    cout << endl;
+  }
+}
+
+/**
+ * @brief Example driver code to demonstrate accessing and modification data inside of my array
+ * 
+ * @return int 
  */
 int main() {
-  DynArray stones(19, 19);
-  Coords player(10, 11);
-  int tempValue = 12345;
-  *stones[player] = tempValue;
-  cout << *stones[player];
+  Coords pos;
+  int boardSize;
+  cout << "Size of your GO board: ";
+  cin >> boardSize;
+  DynArray goBoard(boardSize, boardSize);
+  while (1) {
+    int userInputBoardValue;
+    cout << "use '0' to exit program and display your newly created GO board!" << endl;
+    cout << "Now, provide coordinates [x, y] seperated by space" << endl;
+    cin >> pos.x >> pos.y;
+    cout << pos << endl;
+    cout << "Desired value on this place: ";
+    cin >> userInputBoardValue;
+    if (userInputBoardValue == 0) {
+      break;
+    }
+    *goBoard[pos] = userInputBoardValue;
+  }
+  printBoard(goBoard);
+
+  return 0;
 }
